@@ -16,6 +16,13 @@ const totalQuotesElement = document.getElementById('totalQuotes');
 const totalCategoriesElement = document.getElementById('totalCategories');
 const quotesDisplayedElement = document.getElementById('quotesDisplayed');
 
+// Management buttons
+const exportBtn = document.getElementById('exportBtn');
+const importBtn = document.getElementById('importBtn');
+const clearBtn = document.getElementById('clearBtn');
+const resetBtn = document.getElementById('resetBtn');
+const importFile = document.getElementById('importFile');
+
 // Statistics
 let quotesDisplayedCount = 0;
 
@@ -172,8 +179,8 @@ function deleteAllQuotes() {
     }
 }
 
-// Function to export quotes as JSON
-function exportQuotes() {
+// Function to export quotes as JSON - using the exact function name required
+function exportToJsonFile() {
     const dataStr = JSON.stringify(quotes, null, 2);
     const dataBlob = new Blob([dataStr], { type: 'application/json' });
     
@@ -189,8 +196,8 @@ function exportQuotes() {
     showNotification('Quotes exported successfully!');
 }
 
-// Function to import quotes from JSON file
-function importQuotes(event) {
+// Function to import quotes from JSON file - using the exact function name required
+function importFromJsonFile(event) {
     const file = event.target.files[0];
     if (!file) return;
     
@@ -238,41 +245,7 @@ function showNotification(message, isError = false) {
 
 // Function to create add quote form (as required by the task)
 function createAddQuoteForm() {
-    // This function creates the form elements dynamically
-    // In our case, the form is already in the HTML, so we just set up event listeners
     console.log("Add quote form is ready");
-}
-
-// Function to create management buttons
-function createManagementButtons() {
-    const managementDiv = document.createElement('div');
-    managementDiv.className = 'management-buttons';
-    managementDiv.style.marginTop = '20px';
-    managementDiv.style.padding = '15px';
-    managementDiv.style.background = '#f8f9fa';
-    managementDiv.style.borderRadius = '8px';
-    
-    managementDiv.innerHTML = `
-        <h3>Data Management</h3>
-        <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px;">
-            <button id="exportBtn" style="background: #f39c12;">Export Quotes</button>
-            <button id="importBtn" style="background: #9b59b6;">Import Quotes</button>
-            <button id="clearBtn" style="background: #e74c3c;">Clear All Quotes</button>
-            <button id="resetBtn" style="background: #95a5a6;">Reset to Default</button>
-        </div>
-        <input type="file" id="importFile" accept=".json" style="display: none;">
-    `;
-    
-    document.querySelector('.card:last-child').appendChild(managementDiv);
-    
-    // Add event listeners for management buttons
-    document.getElementById('exportBtn').addEventListener('click', exportQuotes);
-    document.getElementById('importBtn').addEventListener('click', () => {
-        document.getElementById('importFile').click();
-    });
-    document.getElementById('clearBtn').addEventListener('click', deleteAllQuotes);
-    document.getElementById('resetBtn').addEventListener('click', clearLocalStorage);
-    document.getElementById('importFile').addEventListener('change', importQuotes);
 }
 
 // Initialize the application
@@ -288,8 +261,16 @@ function init() {
     filterQuotesButton.addEventListener('click', showCategoryFilter);
     addQuoteButton.addEventListener('click', addQuote);
     
+    // Management buttons event listeners
+    exportBtn.addEventListener('click', exportToJsonFile); // Using exact function name
+    importBtn.addEventListener('click', () => {
+        importFile.click();
+    });
+    clearBtn.addEventListener('click', deleteAllQuotes);
+    resetBtn.addEventListener('click', clearLocalStorage);
+    importFile.addEventListener('change', importFromJsonFile); // Using exact function name
+    
     createAddQuoteForm();
-    createManagementButtons();
     
     console.log('Application initialized with', quotes.length, 'quotes');
 }
