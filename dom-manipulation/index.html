@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Quote Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: #f0f2f5;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #7f8c8d;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 600px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .quote-display {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 250px;
+        }
+
+        .quote-text {
+            font-size: 18px;
+            font-style: italic;
+            margin-bottom: 15px;
+        }
+
+        .quote-author {
+            font-weight: bold;
+            text-align: right;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .quote-category {
+            background: #3498db;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            display: inline-block;
+            margin-bottom: 15px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            background: #3498db;
+            color: white;
+            cursor: pointer;
+            flex: 1;
+        }
+
+        button:hover {
+            background: #2980b9;
+        }
+
+        #filterQuotes {
+            background: #27ae60;
+        }
+
+        #filterQuotes:hover {
+            background: #219653;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #3498db;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #7f8c8d;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            background: #27ae60;
+            color: white;
+            border-radius: 5px;
+            display: none;
+        }
+
+        .notification.show {
+            display: block;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Dynamic Quote Generator</h1>
+            <p class="subtitle">Find inspiration or add your own wisdom</p>
+        </header>
+
+        <div class="main-content">
+            <div class="card quote-display">
+                <div>
+                    <span class="quote-category" id="quoteCategory">Inspiration</span>
+                    <p class="quote-text" id="quoteText">The only way to do great work is to love what you do.</p>
+                    <p class="quote-author" id="quoteAuthor">- Steve Jobs</p>
+                </div>
+                <div class="button-group">
+                    <button id="newQuote">Show New Quote</button>
+                    <button id="filterQuotes">Filter by Category</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Add a New Quote</h2>
+                <div class="form-group">
+                    <label for="newQuoteText">Quote Text</label>
+                    <input type="text" id="newQuoteText" placeholder="Enter a new quote">
+                </div>
+                <div class="form-group">
+                    <label for="newQuoteAuthor">Author</label>
+                    <input type="text" id="newQuoteAuthor" placeholder="Enter author name">
+                </div>
+                <div class="form-group">
+                    <label for="newQuoteCategory">Category</label>
+                    <select id="newQuoteCategory">
+                        <option value="Inspiration">Inspiration</option>
+                        <option value="Wisdom">Wisdom</option>
+                        <option value="Motivation">Motivation</option>
+                        <option value="Success">Success</option>
+                        <option value="Life">Life</option>
+                    </select>
+                </div>
+                <button id="addQuoteBtn">Add Quote</button>
+            </div>
+        </div>
+
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-value" id="totalQuotes">0</div>
+                <div class="stat-label">Total Quotes</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="totalCategories">0</div>
+                <div class="stat-label">Categories</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="quotesDisplayed">0</div>
+                <div class="stat-label">Quotes Displayed</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="notification" id="notification">Quote added successfully!</div>
+
+    <footer>
+        <p>Dynamic Quote Generator &copy; 2023</p>
+    </footer>
+
+    <script>
+        // Initial quotes array
+        let quotes = [
+            { text: "The only way to do great work is to love what you do.", author: "Steve Jobs", category: "Inspiration" },
+            { text: "Life is what happens to you while you're busy making other plans.", author: "John Lennon", category: "Life" },
+            { text: "The future belongs to those who believe in the beauty of their dreams.", author: "Eleanor Roosevelt", category: "Motivation" },
+            { text: "It is during our darkest moments that we must focus to see the light.", author: "Aristotle", category: "Wisdom" },
+            { text: "Whoever is happy will make others happy too.", author: "Anne Frank", category: "Life" },
+            { text: "In the middle of difficulty lies opportunity.", author: "Albert Einstein", category: "Wisdom" },
+            { text: "The only impossible journey is the one you never begin.", author: "Tony Robbins", category: "Motivation" },
+            { text: "Don't judge each day by the harvest you reap but by the seeds that you plant.", author: "Robert Louis Stevenson", category: "Wisdom" },
+            { text: "The way to get started is to quit talking and begin doing.", author: "Walt Disney", category: "Success" },
+            { text: "Your time is limited, so don't waste it living someone else's life.", author: "Steve Jobs", category: "Inspiration" }
+        ];
+
+        // DOM Elements
+        const quoteTextElement = document.getElementById('quoteText');
+        const quoteAuthorElement = document.getElementById('quoteAuthor');
+        const quoteCategoryElement = document.getElementById('quoteCategory');
+        const newQuoteButton = document.getElementById('newQuote');
+        const filterQuotesButton = document.getElementById('filterQuotes');
+        const addQuoteButton = document.getElementById('addQuoteBtn');
+        const newQuoteTextInput = document.getElementById('newQuoteText');
+        const newQuoteAuthorInput = document.getElementById('newQuoteAuthor');
+        const newQuoteCategorySelect = document.getElementById('newQuoteCategory');
+        const notification = document.getElementById('notification');
+        const totalQuotesElement = document.getElementById('totalQuotes');
+        const totalCategoriesElement = document.getElementById('totalCategories');
+        const quotesDisplayedElement = document.getElementById('quotesDisplayed');
+
+        // Statistics
+        let quotesDisplayedCount = 0;
+
+        // Initialize the application
+        function init() {
+            showRandomQuote();
+            updateStatistics();
+            
+            newQuoteButton.addEventListener('click', showRandomQuote);
+            filterQuotesButton.addEventListener('click', showCategoryFilter);
+            addQuoteButton.addEventListener('click', addQuote);
+        }
+
+        // Show a random quote
+        function showRandomQuote() {
+            if (quotes.length === 0) {
+                quoteTextElement.textContent = "No quotes available. Add some quotes!";
+                quoteAuthorElement.textContent = "";
+                quoteCategoryElement.textContent = "Empty";
+                return;
+            }
+            
+            const randomIndex = Math.floor(Math.random() * quotes.length);
+            const randomQuote = quotes[randomIndex];
+            
+            quoteTextElement.textContent = randomQuote.text;
+            quoteAuthorElement.textContent = `- ${randomQuote.author}`;
+            quoteCategoryElement.textContent = randomQuote.category;
+            
+            quotesDisplayedCount++;
+            quotesDisplayedElement.textContent = quotesDisplayedCount;
+        }
+
+        // Show category filter options
+        function showCategoryFilter() {
+            const categories = [...new Set(quotes.map(quote => quote.category))];
+            
+            if (categories.length === 0) {
+                alert("No quotes available to filter.");
+                return;
+            }
+            
+            let filterOptions = "Filter by category:\n";
+            categories.forEach((category, index) => {
+                filterOptions += `${index + 1}. ${category}\n`;
+            });
+            
+            const selectedCategory = prompt(filterOptions + "\nEnter the category number:");
+            
+            if (selectedCategory && !isNaN(selectedCategory) && selectedCategory > 0 && selectedCategory <= categories.length) {
+                const categoryIndex = parseInt(selectedCategory) - 1;
+                const filteredQuotes = quotes.filter(quote => quote.category === categories[categoryIndex]);
+                
+                if (filteredQuotes.length > 0) {
+                    const randomIndex = Math.floor(Math.random() * filteredQuotes.length);
+                    const randomQuote = filteredQuotes[randomIndex];
+                    
+                    quoteTextElement.textContent = randomQuote.text;
+                    quoteAuthorElement.textContent = `- ${randomQuote.author}`;
+                    quoteCategoryElement.textContent = randomQuote.category;
+                    
+                    quotesDisplayedCount++;
+                    quotesDisplayedElement.textContent = quotesDisplayedCount;
+                    
+                    showNotification(`Showing quote from category: ${categories[categoryIndex]}`);
+                }
+            }
+        }
+
+        // Add a new quote
+        function addQuote() {
+            const text = newQuoteTextInput.value.trim();
+            const author = newQuoteAuthorInput.value.trim();
+            const category = newQuoteCategorySelect.value;
+            
+            if (!text) {
+                showNotification("Please enter a quote text.", true);
+                return;
+            }
+            
+            if (!author) {
+                showNotification("Please enter an author name.", true);
+                return;
+            }
+            
+            const newQuote = {
+                text: text,
+                author: author,
+                category: category
+            };
+            
+            quotes.push(newQuote);
+            
+            newQuoteTextInput.value = '';
+            newQuoteAuthorInput.value = '';
+            newQuoteCategorySelect.value = 'Inspiration';
+            
+            updateStatistics();
+            showNotification("Quote added successfully!");
+            
+            setTimeout(() => {
+                quoteTextElement.textContent = newQuote.text;
+                quoteAuthorElement.textContent = `- ${newQuote.author}`;
+                quoteCategoryElement.textContent = newQuote.category;
+                
+                quotesDisplayedCount++;
+                quotesDisplayedElement.textContent = quotesDisplayedCount;
+            }, 1500);
+        }
+
+        // Update statistics
+        function updateStatistics() {
+            totalQuotesElement.textContent = quotes.length;
+            
+            const categories = [...new Set(quotes.map(quote => quote.category))];
+            totalCategoriesElement.textContent = categories.length;
+        }
+
+        // Show notification
+        function showNotification(message, isError = false) {
+            notification.textContent = message;
+            notification.style.background = isError ? '#e74c3c' : '#27ae60';
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Initialize the application when DOM is loaded
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
