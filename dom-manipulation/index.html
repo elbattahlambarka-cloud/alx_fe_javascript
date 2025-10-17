@@ -51,7 +51,7 @@
             background: #2980b9;
         }
         
-        input {
+        input, select {
             padding: 8px;
             margin: 5px;
             border: 1px solid #ddd;
@@ -107,6 +107,20 @@
             font-size: 12px;
             color: #666;
         }
+        
+        .filter-section {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid #ffc107;
+        }
+        
+        .filter-info {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #666;
+        }
     </style>
 </head>
 <body>
@@ -121,10 +135,25 @@
             <div class="stat-value" id="totalCategories">0</div>
             <div class="stat-label">Categories</div>
         </div>
+        <div class="stat-item">
+            <div class="stat-value" id="filteredQuotes">0</div>
+            <div class="stat-label">Filtered</div>
+        </div>
+    </div>
+    
+    <!-- Filter Section -->
+    <div class="filter-section">
+        <h3>Filter Quotes by Category</h3>
+        <select id="categoryFilter">
+            <option value="all">All Categories</option>
+            <!-- Categories will be populated dynamically -->
+        </select>
+        <button id="clearFilter">Clear Filter</button>
+        <div class="filter-info" id="filterInfo">Showing all quotes</div>
     </div>
     
     <div id="quoteDisplay"></div>
-    <button id="newQuote">Show New Quote</button>
+    <button id="newQuote">Show Random Quote</button>
     
     <!-- Data Management Section -->
     <div class="management-section">
