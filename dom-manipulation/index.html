@@ -5,337 +5,70 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dynamic Quote Generator</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: Arial, sans-serif;
-        }
-
         body {
-            background: #f0f2f5;
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
             padding: 20px;
             line-height: 1.6;
         }
-
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
-        header {
-            text-align: center;
-            margin-bottom: 30px;
-            padding: 20px;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
+        
         h1 {
-            color: #2c3e50;
-            margin-bottom: 10px;
+            color: #333;
+            text-align: center;
         }
-
-        .main-content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-bottom: 20px;
-        }
-
-        @media (max-width: 600px) {
-            .main-content {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .card {
-            background: white;
+        
+        #quoteDisplay {
+            background: #f9f9f9;
             padding: 20px;
             border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin: 20px 0;
+            border-left: 4px solid #3498db;
         }
-
-        .quote-display {
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            min-height: 250px;
-        }
-
-        .quote-text {
+        
+        .quote p {
             font-size: 18px;
             font-style: italic;
-            margin-bottom: 15px;
-        }
-
-        .quote-author {
-            font-weight: bold;
-            text-align: right;
-            color: #2c3e50;
             margin-bottom: 10px;
         }
-
-        .quote-category {
-            background: #3498db;
-            color: white;
-            padding: 5px 10px;
-            border-radius: 15px;
-            font-size: 12px;
-            display: inline-block;
-            margin-bottom: 15px;
+        
+        .quote small {
+            color: #666;
         }
-
-        .button-group {
-            display: flex;
-            gap: 10px;
-        }
-
+        
         button {
-            padding: 10px 15px;
-            border: none;
-            border-radius: 5px;
             background: #3498db;
             color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
             cursor: pointer;
-            flex: 1;
+            margin: 5px;
         }
-
+        
         button:hover {
             background: #2980b9;
         }
-
-        #filterQuotes {
-            background: #27ae60;
-        }
-
-        #filterQuotes:hover {
-            background: #219653;
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-
-        input, select {
-            width: 100%;
-            padding: 8px 10px;
+        
+        input {
+            padding: 8px;
+            margin: 5px;
             border: 1px solid #ddd;
-            border-radius: 5px;
+            border-radius: 4px;
+            width: 200px;
         }
-
-        .stats {
-            display: flex;
-            justify-content: space-between;
-            background: white;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-        }
-
-        .stat-item {
-            text-align: center;
-        }
-
-        .stat-value {
-            font-size: 24px;
-            font-weight: bold;
-            color: #3498db;
-        }
-
-        .stat-label {
-            font-size: 14px;
-            color: #7f8c8d;
-        }
-
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 15px 20px;
-            background: #27ae60;
-            color: white;
-            border-radius: 5px;
-            display: none;
-        }
-
-        .notification.show {
-            display: block;
-        }
-
-        .management-section {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-        }
-
-        .management-section h3 {
-            margin-bottom: 15px;
-            color: #2c3e50;
-        }
-
-        .management-buttons {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .management-buttons button {
-            flex: 1;
-            min-width: 120px;
-        }
-
-        #exportBtn {
-            background: #f39c12;
-        }
-
-        #exportBtn:hover {
-            background: #e67e22;
-        }
-
-        #importBtn {
-            background: #9b59b6;
-        }
-
-        #importBtn:hover {
-            background: #8e44ad;
-        }
-
-        #clearBtn {
-            background: #e74c3c;
-        }
-
-        #clearBtn:hover {
-            background: #c0392b;
-        }
-
-        #resetBtn {
-            background: #95a5a6;
-        }
-
-        #resetBtn:hover {
-            background: #7f8c8d;
-        }
-
-        .file-input-group {
-            margin-top: 15px;
-        }
-
-        .file-input-group label {
-            display: inline-block;
-            background: #3498db;
-            color: white;
-            padding: 8px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-bottom: 10px;
-        }
-
-        .file-input-group label:hover {
-            background: #2980b9;
-        }
-
-        footer {
-            text-align: center;
+        
+        h3 {
+            color: #333;
             margin-top: 30px;
-            color: #7f8c8d;
-            font-size: 14px;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>Dynamic Quote Generator</h1>
-            <p>Find inspiration or add your own wisdom</p>
-        </header>
-
-        <div class="main-content">
-            <div class="card quote-display">
-                <div>
-                    <span class="quote-category" id="quoteCategory">Inspiration</span>
-                    <p class="quote-text" id="quoteText">The only way to do great work is to love what you do.</p>
-                    <p class="quote-author" id="quoteAuthor">- Steve Jobs</p>
-                </div>
-                <div class="button-group">
-                    <button id="newQuote">Show New Quote</button>
-                    <button id="filterQuotes">Filter by Category</button>
-                </div>
-            </div>
-
-            <div class="card">
-                <h2>Add a New Quote</h2>
-                <div class="form-group">
-                    <label for="newQuoteText">Quote Text</label>
-                    <input type="text" id="newQuoteText" placeholder="Enter a new quote">
-                </div>
-                <div class="form-group">
-                    <label for="newQuoteAuthor">Author</label>
-                    <input type="text" id="newQuoteAuthor" placeholder="Enter author name">
-                </div>
-                <div class="form-group">
-                    <label for="newQuoteCategory">Category</label>
-                    <select id="newQuoteCategory">
-                        <option value="Inspiration">Inspiration</option>
-                        <option value="Wisdom">Wisdom</option>
-                        <option value="Motivation">Motivation</option>
-                        <option value="Success">Success</option>
-                        <option value="Life">Life</option>
-                    </select>
-                </div>
-                <button id="addQuoteBtn">Add Quote</button>
-            </div>
-        </div>
-
-        <div class="stats">
-            <div class="stat-item">
-                <div class="stat-value" id="totalQuotes">0</div>
-                <div class="stat-label">Total Quotes</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-value" id="totalCategories">0</div>
-                <div class="stat-label">Categories</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-value" id="quotesDisplayed">0</div>
-                <div class="stat-label">Quotes Displayed</div>
-            </div>
-        </div>
-
-        <!-- Data Management Section -->
-        <div class="management-section">
-            <h3>Data Management</h3>
-            <div class="management-buttons">
-                <button id="exportBtn">Export Quotes</button>
-                <button id="importBtn">Import Quotes</button>
-                <button id="clearBtn">Clear All Quotes</button>
-                <button id="resetBtn">Reset to Default</button>
-            </div>
-            
-            <div class="file-input-group">
-                <label for="importFile">Choose JSON File to Import</label>
-                <input type="file" id="importFile" accept=".json">
-            </div>
-        </div>
-    </div>
-
-    <div class="notification" id="notification">Quote added successfully!</div>
-
-    <footer>
-        <p>Dynamic Quote Generator &copy; 2023</p>
-    </footer>
-
-    <!-- Link to external JavaScript file -->
+    <h1>Dynamic Quote Generator</h1>
+    <div id="quoteDisplay"></div>
+    <button id="newQuote">Show New Quote</button>
+    
     <script src="script.js"></script>
 </body>
 </html>
