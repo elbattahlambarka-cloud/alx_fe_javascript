@@ -35,49 +35,72 @@ const defaultQuotes = [
 ];
 
 // ============================
-// SERVER SIMULATION FUNCTIONS
+// SERVER SIMULATION WITH JSONPLACEHOLDER
 // ============================
 
-// Fetch data from server using mock API
+// Fetch data from server using JSONPlaceholder mock API
 async function fetchQuotesFromServer() {
     try {
-        // Simulate API call delay
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        // Use JSONPlaceholder as required
+        const response = await fetch('https://jsonplaceholder.typicode.com/posts');
         
-        // Mock server data using localStorage to simulate persistent server storage
-        let serverData = JSON.parse(localStorage.getItem('serverQuotes') || '[]');
-        
-        // Initialize server data if empty
-        if (serverData.length === 0) {
-            serverData = [
-                { text: "The only way to do great work is to love what you do.", category: "Inspiration" },
-                { text: "Life is what happens when you're busy making other plans.", category: "Life" },
-                { text: "The future belongs to those who believe in their dreams.", category: "Motivation" },
-                { text: "In the middle of difficulty lies opportunity.", category: "Wisdom" },
-                { text: "Happiness is not something ready made. It comes from your own actions.", category: "Life" }
-            ];
-            localStorage.setItem('serverQuotes', JSON.stringify(serverData));
+        if (!response.ok) {
+            throw new Error('Failed to fetch from server');
         }
         
-        return serverData;
+        const posts = await response.json();
+        
+        // Convert posts to our quote format
+        const serverQuotes = posts.slice(0, 5).map((post, index) => ({
+            text: post.title,
+            category: ["Inspiration", "Life", "Motivation", "Wisdom", "Success"][index % 5]
+        }));
+        
+        return serverQuotes;
     } catch (error) {
         console.error('Error fetching from server:', error);
-        throw new Error('Failed to fetch data from server');
+        // Fallback to localStorage if fetch fails
+        const fallbackData = JSON.parse(localStorage.getItem('serverQuotesFallback') || '[]');
+        if (fallbackData.length === 0) {
+            return defaultQuotes;
+        }
+        return fallbackData;
     }
 }
 
-// Post data to server using mock API - SIMPLE VERSION FOR TEST
+// Post data to server using JSONPlaceholder mock API
 async function postQuotesToServer(quotesData) {
     try {
-        // Simulate API call delay
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        // Convert our quotes to post format for JSONPlaceholder
+        const postData = {
+            title: `Quotes Sync - ${new Date().toLocaleString()}`,
+            body: JSON.stringify(quotesData),
+            userId: 1
+        };
+
+        // Use JSONPlaceholder as required
+        const response = await fetch('https://jsonplaceholder.typicode.com/posts', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(postData)
+        });
         
-        // Simply save to localStorage to simulate server storage
-        localStorage.setItem('serverQuotes', JSON.stringify(quotesData));
+        if (!response.ok) {
+            throw new Error('Failed to post to server');
+        }
         
-        return true;
+        const result = await response.json();
+        
+        // Store in localStorage as backup
+        localStorage.setItem('serverQuotesFallback', JSON.stringify(quotesData));
+        
+        return result;
     } catch (error) {
         console.error('Error posting to server:', error);
+        // Fallback to localStorage
+        localStorage.setItem('serverQuotesFallback', JSON.stringify(quotesData));
         throw new Error('Failed to post data to server');
     }
 }
@@ -86,10 +109,11 @@ async function postQuotesToServer(quotesData) {
 // SYNC AND CONFLICT RESOLUTION
 // ============================
 
-// Sync quotes function - SIMPLE VERSION FOR TEST
+// Sync quotes function - main sync logic
 async function syncQuotes() {
     try {
         updateSyncStatus('Syncing with server...', 'sync-warning');
+        showNotification('Starting sync with server...');
         
         // Fetch latest data from server
         const serverData = await fetchQuotesFromServer();
@@ -106,30 +130,23 @@ async function syncQuotes() {
     }
 }
 
-// Update local storage with server data and handle conflicts - SIMPLE VERSION FOR TEST
+// Update local storage with server data and handle conflicts
 function updateLocalStorageWithServerData(serverData) {
-    const conflicts = [];
+    // Simple conflict detection
+    const localDataString = JSON.stringify(quotes);
+    const serverDataString = JSON.stringify(serverData);
     
-    // Simple conflict detection: check if quotes are different
-    if (JSON.stringify(quotes) !== JSON.stringify(serverData)) {
-        conflicts.push({
-            message: 'Local data differs from server data'
-        });
-    }
-    
-    if (conflicts.length > 0) {
-        // Server data takes precedence in conflicts
+    if (localDataString !== serverDataString) {
+        // Conflict detected - server data takes precedence
         quotes = [...serverData];
         saveQuotes();
         populateCategories();
         showRandomQuote();
         
-        // Show conflict notification
-        showNotification('Data updated from server. Server data used to resolve conflicts.');
+        // Show conflict resolution UI
+        showConflictUI('Server data has been used to update local quotes (server precedence).');
         updateSyncStatus('Sync completed - conflicts resolved', 'sync-success');
-        
-        // Show conflict UI
-        showConflictUI('Server data has been used to update local quotes.');
+        showNotification('Data synced from server - conflicts resolved', false);
     } else {
         // No conflicts
         quotes = [...serverData];
@@ -137,17 +154,24 @@ function updateLocalStorageWithServerData(serverData) {
         populateCategories();
         showRandomQuote();
         updateSyncStatus('Sync completed successfully', 'sync-success');
-        showNotification('Quotes synced successfully with server');
+        showNotification('Quotes synced successfully with server', false);
     }
 }
 
 // Periodically check for new quotes from the server
 function setupPeriodicSync() {
-    // Sync every 30 seconds
-    syncInterval = setInterval(syncQuotes, 30000);
+    // Sync immediately on load
+    setTimeout(() => {
+        syncQuotes();
+    }, 3000);
+    
+    // Then sync every 60 seconds
+    syncInterval = setInterval(() => {
+        syncQuotes();
+    }, 60000);
     
     // Show notification about periodic sync
-    showNotification('Automatic sync enabled - checking server every 30 seconds');
+    showNotification('Automatic sync enabled - checking server every 60 seconds', false);
 }
 
 // ============================
@@ -158,10 +182,12 @@ function showConflictUI(message) {
     conflictResolution.style.display = 'block';
     conflictDetails.innerHTML = `
         <div class="conflict-item">
-            <strong>Conflict Resolved:</strong> ${message}
+            <strong>Data Updated from Server</strong><br>
+            ${message}
         </div>
         <div style="margin-top: 10px;">
             <button onclick="hideConflictUI()" style="background: #28a745;">OK</button>
+            <button onclick="postQuotesToServer(quotes).then(() => hideConflictUI())" style="background: #007bff;">Send Local Data to Server</button>
         </div>
     `;
 }
@@ -188,6 +214,7 @@ function showNotification(message, isError = false) {
         z-index: 1000;
         box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         max-width: 300px;
+        font-weight: bold;
     `;
     notification.textContent = message;
     
@@ -385,7 +412,7 @@ function addQuote() {
         
         saveSessionData();
         
-        showNotification('New quote added locally');
+        showNotification('New quote added locally', false);
     } else {
         showNotification('Please enter both quote text and category', true);
     }
@@ -424,7 +451,7 @@ function exportToJsonFile() {
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
     
-    showNotification('Quotes exported successfully!');
+    showNotification('Quotes exported successfully!', false);
 }
 
 function importFromJsonFile(event) {
@@ -450,7 +477,7 @@ function importFromJsonFile(event) {
             
             saveSessionData();
             
-            showNotification(`${importedQuotes.length} quotes imported successfully!`);
+            showNotification(`${importedQuotes.length} quotes imported successfully!`, false);
         } catch (error) {
             showNotification('Error importing quotes: ' + error.message, true);
         }
@@ -549,13 +576,14 @@ document.addEventListener('DOMContentLoaded', function() {
             saveQuotes();
             populateCategories();
             showRandomQuote();
-            showNotification('Forced server data update');
+            showNotification('Forced server data update', false);
         });
     });
     
     forceLocalButton.addEventListener('click', () => {
-        postQuotesToServer(quotes);
-        showNotification('Local data posted to server');
+        postQuotesToServer(quotes).then(() => {
+            showNotification('Local data posted to server', false);
+        });
     });
     
     showRandomQuote();
